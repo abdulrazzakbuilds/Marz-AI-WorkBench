@@ -116,6 +116,115 @@ pub async fn agent_list_files(app: AppHandle) -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
+pub async fn agent_project_map(app: AppHandle) -> Result<String, String> {
+    let root = selected_project(&app)?;
+    build_project_map(&root)
+}
+
+fn build_project_map(root: &Path) -> Result<String, String> {
+    let root = fs::canonicalize(root).map_err(|e| format!("Invalid project folder: {e}"))?;
+    let mut queue = VecDeque::from([(root.clone(), 0usize)]);
+    let mut files = Vec::new();
+    while let Some((dir, depth)) = queue.pop_front() {
+        if depth > 4 {
+            continue;
+        }
+        let entries = fs::read_dir(&dir).map_err(|e| e.to_string())?;
+        for entry in entries.flatten() {
+            let name = entry.file_name().to_string_lossy().to_string();
+            if name.starts_with('.')
+                || matches!(
+                    name.as_str(),
+                    "node_modules" | "target" | "dist" | "build" | "vendor" | ".git"
+                )
+            {
+                continue;
+            }
+            let path = entry.path();
+            let meta = match fs::symlink_metadata(&path) {
+                Ok(m) => m,
+                Err(_) => continue,
+            };
+            if meta.file_type().is_symlink() {
+                continue;
+            }
+            if meta.is_dir() {
+                queue.push_back((path, depth + 1));
+            } else if meta.is_file() {
+                if let Ok(rel) = path.strip_prefix(&root) {
+                    files.push(rel.to_string_lossy().replace('\\', "/"));
+                }
+            }
+            if files.len() >= 250 {
+                break;
+            }
+        }
+        if files.len() >= 250 {
+            break;
+        }
+    }
+    files.sort();
+
+    let key_files = [
+        "AGENTS.md",
+        "CLAUDE.md",
+        ".cursorrules",
+        "CONTRIBUTING.md",
+        "README.md",
+        "package.json",
+        "Cargo.toml",
+        "pyproject.toml",
+        "go.mod",
+        "pom.xml",
+        "build.gradle",
+        "Makefile",
+    ];
+    let mut map = format!("Project root: {}\n\n", root.display());
+    map.push_str("## File map (up to 250 files, depth 4)\n");
+    for file in &files {
+        map.push_str("- ");
+        map.push_str(file);
+        map.push('\n');
+    }
+    if files.len() >= 250 {
+        map.push_str("- [file map truncated at 250 entries]\n");
+    }
+
+    map.push_str("\n## Project guides and manifests\n");
+    let mut included = 0usize;
+    let mut remaining = 48_000usize;
+    for rel in key_files {
+        let path = root.join(rel);
+        if !path.is_file() {
+            continue;
+        }
+        let Ok(meta) = fs::symlink_metadata(&path) else {
+            continue;
+        };
+        if meta.file_type().is_symlink() || meta.len() > 24_000 || remaining == 0 {
+            continue;
+        }
+        let Ok(content) = fs::read_to_string(&path) else {
+            continue;
+        };
+        let end = content
+            .char_indices()
+            .take_while(|(index, _)| *index < remaining)
+            .last()
+            .map(|(index, ch)| index + ch.len_utf8())
+            .unwrap_or(0);
+        let content = &content[..end];
+        map.push_str(&format!("\n### {rel}\n```text\n{content}\n```\n"));
+        remaining = remaining.saturating_sub(content.len());
+        included += 1;
+    }
+    if included == 0 {
+        map.push_str("No recognized root-level project guides or manifests were found.\n");
+    }
+    Ok(map)
+}
+
+#[tauri::command]
 pub async fn agent_read_file(app: AppHandle, path: String) -> Result<String, String> {
     let root = selected_project(&app)?;
     let file = project_path(root.to_str().ok_or("Invalid selected project path")?, &path)?;
@@ -247,6 +356,29 @@ mod tests {
         fs::create_dir_all(&root).unwrap();
         fs::write(root.join("inside.txt"), "ok").unwrap();
         assert!(project_path(root.to_str().unwrap(), "inside.txt").is_ok());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn project_map_includes_guides_manifests_and_bounded_file_tree() {
+        let root = test_root();
+        fs::create_dir_all(root.join("src")).unwrap();
+        fs::create_dir_all(root.join("target")).unwrap();
+        fs::write(root.join("AGENTS.md"), "Use focused changes.").unwrap();
+        fs::write(
+            root.join("package.json"),
+            r#"{"name":"sample-project","scripts":{"test":"vitest"}}"#,
+        )
+        .unwrap();
+        fs::write(root.join("src/main.ts"), "export const value = 1;").unwrap();
+        fs::write(root.join("target/generated.rs"), "generated").unwrap();
+
+        let map = build_project_map(&root).unwrap();
+        assert!(map.contains("AGENTS.md"));
+        assert!(map.contains("Use focused changes."));
+        assert!(map.contains("src/main.ts"));
+        assert!(!map.contains("target/generated.rs"));
+
         let _ = fs::remove_dir_all(root);
     }
 }

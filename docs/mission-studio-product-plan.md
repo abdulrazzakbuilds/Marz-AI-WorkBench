@@ -30,6 +30,11 @@ match:
 - [Aider commands](https://github.com/Aider-AI/aider/blob/main/aider/website/docs/usage/commands.md)
   make repository maps, diffs, tests, lint, and undo part of the normal agent
   loop.
+- [Aider's repository map](https://github.com/Aider-AI/aider/blob/main/aider/repomap.py)
+  gives the agent a compact structural overview before it reads individual
+  files. Marz now adapts the first step: a bounded file map plus recognized
+  root guides and build manifests. The Python/tree-sitter implementation is not
+  imported because it would add a second runtime to the Tauri app.
 - [Browser Use](https://github.com/browser-use/browser-use) runs a model-driven
   browser agent against Chrome through Python and CDP. It confirms that browser
   actions can be real agent tools, but its browser runtime does not directly
@@ -157,10 +162,11 @@ redaction, and conflict behavior are clear.
 
 ## First implementation slice
 
-This iteration includes explicit active-page capture into a project task,
-source title/URL in the task context, in-memory handling, and a visible notice
-that page text is sent when the task starts. It also refreshes Mission Control's
-visual system and adds a copyable mission handoff. Real repo maps, multi-file
-edits, terminal approval, durable event journals, and spaced study review are
-still roadmap work. Do not market the current single-file proposal agent as
-parity with established coding agents.
+This iteration includes a bounded project map with root guides and manifests,
+explicit active-page capture into a project task, source title/URL in the task
+context, in-memory handling, and a visible notice that page text is sent when
+the task starts. It also refreshes Mission Control's visual system and adds a
+copyable mission handoff. Multi-file diff review, terminal approval, durable
+event journals, and spaced study review are still roadmap work. Do not market
+the current single-file proposal agent as parity with established coding
+agents.

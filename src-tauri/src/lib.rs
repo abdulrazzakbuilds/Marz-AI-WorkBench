@@ -445,6 +445,7 @@ pub fn run() {
             agent::agent_choose_project,
             agent::agent_capture_current_page,
             agent::agent_list_files,
+            agent::agent_project_map,
             agent::agent_read_file,
             agent::agent_write_file,
             agent::agent_chat,
