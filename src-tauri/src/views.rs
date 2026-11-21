@@ -66,6 +66,7 @@ pub struct Views {
     pub content_size: Option<(f64, f64)>,
     initial_load_done: Vec<bool>,
     created: bool,
+    mission_control_open: bool,
 }
 
 impl Views {
@@ -222,7 +223,15 @@ pub fn apply_visibility<R: Runtime>(app: &AppHandle<R>) -> Result<(), String> {
     let (ids, visible, content_size) = {
         let views = shared.views.lock().unwrap();
         let ids: Vec<String> = views.defs.iter().map(|d| d.id.clone()).collect();
-        (ids, views.visible_index(), views.content_size)
+        (
+            ids,
+            if views.mission_control_open {
+                None
+            } else {
+                views.visible_index()
+            },
+            views.content_size,
+        )
     };
 
     let rect = visible_rect(&window, content_size, browser_width);
@@ -240,8 +249,22 @@ pub fn apply_visibility<R: Runtime>(app: &AppHandle<R>) -> Result<(), String> {
     Ok(())
 }
 
+/// Hide native provider webviews while React overlays are open above the UI webview.
+pub fn set_mission_control_open<R: Runtime>(app: &AppHandle<R>, open: bool) -> Result<(), String> {
+    app.state::<Shared>()
+        .views
+        .lock()
+        .unwrap()
+        .mission_control_open = open;
+    apply_visibility(app)
+}
+
 /// レンダラーから表示領域の大きさが届いたとき。表示中のタブだけサイズを合わせる。
-pub fn resize_visible<R: Runtime>(app: &AppHandle<R>, width: f64, height: f64) -> Result<(), String> {
+pub fn resize_visible<R: Runtime>(
+    app: &AppHandle<R>,
+    width: f64,
+    height: f64,
+) -> Result<(), String> {
     let shared = app.state::<Shared>();
     let window = main_window(app).ok_or("main window not found")?;
     shared.state.lock().unwrap().browser_width = width;

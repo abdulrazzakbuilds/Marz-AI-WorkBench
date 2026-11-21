@@ -1,6 +1,6 @@
 [package]
 name = "marz-ai-workbench"
-version = "0.1.2"
+version = "0.2.0"
 description = "A unified AI, coding, terminal, and study workspace"
 authors = ["Mohammed AbdulRazzak"]
 license = "MIT"
@@ -29,6 +29,7 @@ tokio = { version = "1", features = ["sync", "macros"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 url = "2"
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls", "stream"] }
 log = "0.4"
 # ターミナル（node-pty の代わり）
 portable-pty = "0.9"

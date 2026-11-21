@@ -25,6 +25,9 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { invoke } from '@tauri-apps/api/core';
+
+import { MissionAgent } from './MissionAgent';
 
 type MissionKind = 'build' | 'study';
 type MissionStep = { id: string; title: string; done: boolean };
@@ -109,6 +112,14 @@ export function MissionControl({
   const [kind, setKind] = useState<MissionKind>('build');
   const [title, setTitle] = useState('');
   const [outcome, setOutcome] = useState('');
+  const [section, setSection] = useState<'missions' | 'agent'>('missions');
+
+  useEffect(() => {
+    void invoke('set_mission_control_visible', { visible: open });
+    return () => {
+      void invoke('set_mission_control_visible', { visible: false });
+    };
+  }, [open]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(missions));
@@ -181,12 +192,30 @@ export function MissionControl({
               </Typography>
             </Box>
           </Stack>
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant={section === 'missions' ? 'contained' : 'outlined'}
+              onClick={() => setSection('missions')}
+            >
+              Missions
+            </Button>
+            <Button
+              variant={section === 'agent' ? 'contained' : 'outlined'}
+              onClick={() => setSection('agent')}
+            >
+              Project Agent
+            </Button>
+          </Stack>
           <IconButton onClick={onClose} aria-label="Close Mission Control">
             ×
           </IconButton>
         </Box>
 
-        <Box className="mission-hero">
+        {section === 'agent' && <MissionAgent />}
+        <Box
+          className="mission-hero"
+          sx={{ display: section === 'missions' ? undefined : 'none' }}
+        >
           <Box className="mission-orb mission-orb-one" />
           <Box className="mission-orb mission-orb-two" />
           <Typography className="mission-kicker">
@@ -207,7 +236,10 @@ export function MissionControl({
           </Stack>
         </Box>
 
-        <Box className="mission-grid">
+        <Box
+          className="mission-grid"
+          sx={{ display: section === 'missions' ? undefined : 'none' }}
+        >
           <Paper className="mission-panel mission-create" elevation={0}>
             <Stack
               direction="row"
@@ -336,7 +368,7 @@ export function MissionControl({
           </Paper>
         </Box>
 
-        {active && (
+        {active && section === 'missions' && (
           <Paper className="mission-detail" elevation={0}>
             <Stack
               direction={{ xs: 'column', sm: 'row' }}

@@ -1,6 +1,6 @@
 {
   "name": "marz-ai-workbench",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "A unified AI, coding, terminal, and study workspace",
   "type": "module",
   "license": "MIT",

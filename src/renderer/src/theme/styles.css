@@ -67,6 +67,10 @@ body {
 }
 .mission-content {
   padding: 0 !important;
+  max-height: 94vh;
+  overflow: auto;
+  position: relative;
+  z-index: 1;
 }
 .mission-topbar {
   height: 76px;
@@ -74,6 +78,23 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 30px;
+}
+.mission-agent {
+  padding: 18px 30px 30px;
+}
+.mission-agent-diff {
+  max-height: 360px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(20, 22, 36, 0.06);
+  font:
+    12px / 1.5 ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
 }
 .mission-mark {
   width: 42px;

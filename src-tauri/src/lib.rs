@@ -4,6 +4,7 @@
 //! その上に AI サービスごとの子 WebView（"svc-<ID>"）を重ねる（views.rs）。
 //! IPC は capabilities/default.json で "ui" だけに許可している。
 
+mod agent;
 mod keys;
 mod migrate;
 mod state;
@@ -180,6 +181,11 @@ async fn init(
 #[tauri::command]
 async fn current_urls(app: AppHandle) -> Vec<String> {
     views::current_urls(&app)
+}
+
+#[tauri::command]
+async fn set_mission_control_visible(app: AppHandle, visible: bool) -> Result<(), String> {
+    views::set_mission_control_open(&app, visible)
 }
 
 #[tauri::command]
@@ -390,6 +396,7 @@ fn create_main_window(app: &AppHandle) -> tauri::Result<()> {
 pub fn run() {
     let app = tauri::Builder::default()
         .manage(terminal::Terminals::default())
+        .manage(agent::AgentProject::default())
         .manage(updater::UpdateState::default())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
@@ -434,6 +441,12 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             init,
             current_urls,
+            set_mission_control_visible,
+            agent::agent_choose_project,
+            agent::agent_list_files,
+            agent::agent_read_file,
+            agent::agent_write_file,
+            agent::agent_chat,
             set_browser_size,
             select_browser_tab,
             send_text,
