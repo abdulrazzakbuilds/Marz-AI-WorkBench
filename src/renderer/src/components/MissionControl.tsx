@@ -8,6 +8,7 @@ import {
   ContentCopyRounded,
   DeleteOutlineRounded,
   FlagRounded,
+  LanguageRounded,
   SchoolRounded,
   TaskAltRounded,
 } from '@mui/icons-material';
@@ -29,6 +30,7 @@ import {
 import { invoke } from '@tauri-apps/api/core';
 
 import { MissionAgent } from './MissionAgent';
+import { BrowserAgent } from './BrowserAgent';
 
 type MissionKind = 'build' | 'study';
 type MissionStep = { id: string; title: string; done: boolean };
@@ -113,7 +115,9 @@ export function MissionControl({
   const [kind, setKind] = useState<MissionKind>('build');
   const [title, setTitle] = useState('');
   const [outcome, setOutcome] = useState('');
-  const [section, setSection] = useState<'missions' | 'agent'>('missions');
+  const [section, setSection] = useState<'missions' | 'agent' | 'browser'>(
+    'missions',
+  );
   const [handoffNotice, setHandoffNotice] = useState('');
 
   useEffect(() => {
@@ -211,8 +215,7 @@ export function MissionControl({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="xl"
-      fullWidth
+      fullScreen
       slotProps={{ paper: { className: 'mission-dialog' } }}
     >
       <DialogContent className="mission-content">
@@ -243,6 +246,13 @@ export function MissionControl({
             >
               Project Agent
             </Button>
+            <Button
+              variant={section === 'browser' ? 'contained' : 'outlined'}
+              startIcon={<LanguageRounded />}
+              onClick={() => setSection('browser')}
+            >
+              Browser Agent
+            </Button>
           </Stack>
           <IconButton onClick={onClose} aria-label="Close Mission Control">
             ×
@@ -250,6 +260,7 @@ export function MissionControl({
         </Box>
 
         {section === 'agent' && <MissionAgent />}
+        {section === 'browser' && <BrowserAgent />}
         {section === 'missions' && (
           <Box className="mission-hero">
             <Box className="mission-orb mission-orb-one" />

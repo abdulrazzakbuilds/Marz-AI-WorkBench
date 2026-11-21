@@ -34,6 +34,24 @@ type ChatMessage = {
 type Draft = { id: string; path: string; content: string };
 type CapturedPage = { title: string; url: string; text: string };
 const SETTINGS = 'marz-agent-settings-v1';
+const BROWSER_HANDOFF = 'marz-browser-agent-handoff-v1';
+function takeBrowserHandoff(): CapturedPage | null {
+  try {
+    const raw = localStorage.getItem(BROWSER_HANDOFF);
+    if (!raw) return null;
+    const handoff = JSON.parse(raw) as CapturedPage;
+    if (
+      typeof handoff.title !== 'string' ||
+      typeof handoff.url !== 'string' ||
+      typeof handoff.text !== 'string'
+    )
+      return null;
+    localStorage.removeItem(BROWSER_HANDOFF);
+    return handoff;
+  } catch {
+    return null;
+  }
+}
 const tools = [
   {
     type: 'function',
@@ -105,7 +123,7 @@ export function MissionAgent() {
   const [model, setModel] = useState(saved.model || '');
   const [apiKey, setApiKey] = useState('');
   const [root, setRoot] = useState('');
-  const [source, setSource] = useState<CapturedPage | null>(null);
+  const [source, setSource] = useState<CapturedPage | null>(takeBrowserHandoff);
   const [capturing, setCapturing] = useState(false);
   const [task, setTask] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);

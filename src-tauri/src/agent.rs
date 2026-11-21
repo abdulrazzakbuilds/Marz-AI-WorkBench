@@ -72,6 +72,40 @@ pub async fn agent_capture_current_page(
 }
 
 #[tauri::command]
+pub async fn agent_browser_target(app: AppHandle) -> Result<Value, String> {
+    crate::views::browser_agent_target(&app)
+}
+
+#[tauri::command]
+pub async fn agent_browser_inspect(app: AppHandle) -> Result<Value, String> {
+    crate::views::browser_agent_inspect(&app).await
+}
+
+#[tauri::command]
+pub async fn agent_browser_action(
+    app: AppHandle,
+    action: String,
+    ref_index: Option<usize>,
+    expected_label: Option<String>,
+    input_text: Option<String>,
+    url: Option<String>,
+    direction: Option<String>,
+    amount: Option<u32>,
+) -> Result<Value, String> {
+    crate::views::browser_agent_action(
+        &app,
+        &action,
+        ref_index,
+        expected_label.as_deref(),
+        input_text.as_deref(),
+        url.as_deref(),
+        direction.as_deref(),
+        amount,
+    )
+    .await
+}
+
+#[tauri::command]
 pub async fn agent_list_files(app: AppHandle) -> Result<Vec<String>, String> {
     let root = selected_project(&app)?;
     let root = fs::canonicalize(root).map_err(|e| e.to_string())?;

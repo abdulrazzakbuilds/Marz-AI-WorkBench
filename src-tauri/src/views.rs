@@ -6,7 +6,7 @@
 //! ロックを外してから呼ぶ。
 
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+use serde_json::{json, Value};
 use tauri::webview::{NewWindowResponse, PageLoadEvent, WebviewBuilder};
 use tauri::{
     AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, Rect, Runtime, Webview, WebviewUrl,
@@ -341,6 +341,138 @@ pub async fn capture_current_page<R: Runtime>(app: &AppHandle<R>) -> Result<Capt
     })
 }
 
+/// Return a compact, user-triggered view of the selected embedded browser page.
+pub async fn browser_agent_inspect<R: Runtime>(app: &AppHandle<R>) -> Result<Value, String> {
+    let script = r#"JSON.stringify((()=>{const visible=(e)=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'&&e.getAttribute('aria-hidden')!=='true'};const label=(e)=>(e.getAttribute('aria-label')||e.innerText||e.getAttribute('placeholder')||e.title||'').trim().replace(/\s+/g,' ').slice(0,240);const all=[...document.querySelectorAll('a[href],button,input:not([type=password]):not([type=hidden]),textarea,select,[role=button],[role=link]')].filter(visible).slice(0,80);return {title:document.title||'',url:location.href,text:(document.body?.innerText||'').slice(0,14000),elements:all.map((e,index)=>({ref:index,label:label(e),tag:e.tagName.toLowerCase(),type:e.getAttribute('type')||(e.tagName==='BUTTON'&&e.form?'submit':''),href:e.href||'',placeholder:e.getAttribute('placeholder')||'',disabled:!!e.disabled})).filter(e=>e.label||e.href||['input','textarea','select'].includes(e.tag))}})())"#;
+    eval_selected_browser(app, script).await
+}
+
+pub fn browser_agent_target<R: Runtime>(app: &AppHandle<R>) -> Result<Value, String> {
+    let shared = app.state::<Shared>();
+    let (id, label) = {
+        let views = shared.views.lock().unwrap();
+        let index = views
+            .visible_index()
+            .ok_or("Select a browser tab before running a browser task")?;
+        let def = views
+            .defs
+            .get(index)
+            .ok_or("Selected browser tab is unavailable")?;
+        (def.id.clone(), def.label.clone())
+    };
+    let webview = service_webview(app, &id).ok_or("Selected browser is unavailable")?;
+    let url = webview
+        .url()
+        .map_err(|e| format!("Could not read browser address: {e}"))?
+        .to_string();
+    Ok(json!({"label":label,"url":url}))
+}
+
+/// Perform a single constrained browser operation in the selected native WebView.
+pub async fn browser_agent_action<R: Runtime>(
+    app: &AppHandle<R>,
+    action: &str,
+    ref_index: Option<usize>,
+    expected_label: Option<&str>,
+    input_text: Option<&str>,
+    url: Option<&str>,
+    direction: Option<&str>,
+    amount: Option<u32>,
+) -> Result<Value, String> {
+    let script = match action {
+        "click" | "type" => {
+            let index = ref_index
+                .filter(|index| *index < 80)
+                .ok_or("Invalid element reference")?;
+            let label = serde_json::to_string(expected_label.unwrap_or_default())
+                .map_err(|e| e.to_string())?;
+            let operation = if action == "click" {
+                "el.click();return {ok:true,action:'click',label:label,href:el.href||'',url:location.href};"
+            } else {
+                let text = input_text.ok_or("Text is required")?;
+                if text.len() > 5000 {
+                    return Err("Browser text input exceeds 5,000 bytes".into());
+                }
+                let text = serde_json::to_string(text).map_err(|e| e.to_string())?;
+                // Password and hidden inputs are excluded even when the page changes after inspection.
+                return eval_selected_browser(
+                    app,
+                    format!(
+                        "JSON.stringify((()=>{{const all=[...document.querySelectorAll('a[href],button,input:not([type=password]):not([type=hidden]),textarea,select,[role=button],[role=link]')].filter(e=>{{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'&&e.getAttribute('aria-hidden')!=='true'}}).slice(0,80);const el=all[{index}];if(!el)return {{ok:false,error:'Element reference expired; inspect the page again'}};const current=(el.getAttribute('aria-label')||el.innerText||el.getAttribute('placeholder')||el.title||'').trim().replace(/\\s+/g,' ').slice(0,240);if(current!=={label})return {{ok:false,error:'Page changed; element label no longer matches'}};if(el.disabled||!(['INPUT','TEXTAREA'].includes(el.tagName))||el.type==='password')return {{ok:false,error:'This element cannot receive text'}};el.focus();const proto=el.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;const setter=Object.getOwnPropertyDescriptor(proto,'value')?.set;if(!setter)return {{ok:false,error:'Text field is not writable'}};setter.call(el,{text});el.dispatchEvent(new InputEvent('input',{{bubbles:true,inputType:'insertText',data:{text}}}));el.dispatchEvent(new Event('change',{{bubbles:true}}));return {{ok:true,action:'type',label:current,url:location.href}}}})())"
+                    ),
+                )
+                .await;
+            };
+            format!(
+                "JSON.stringify((()=>{{const all=[...document.querySelectorAll('a[href],button,input:not([type=password]):not([type=hidden]),textarea,select,[role=button],[role=link]')].filter(e=>{{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'&&e.getAttribute('aria-hidden')!=='true'}}).slice(0,80);const el=all[{index}];if(!el)return {{ok:false,error:'Element reference expired; inspect the page again'}};const current=(el.getAttribute('aria-label')||el.innerText||el.getAttribute('placeholder')||el.title||'').trim().replace(/\\s+/g,' ').slice(0,240);if(current!=={label})return {{ok:false,error:'Page changed; element label no longer matches'}};if(el.disabled)return {{ok:false,error:'Element is disabled'}};{operation}}})())"
+            )
+        }
+        "navigate" => {
+            let raw = url.ok_or("URL is required")?;
+            let parsed = validate_browser_agent_url(raw)?;
+            let url = serde_json::to_string(parsed.as_str()).map_err(|e| e.to_string())?;
+            format!("JSON.stringify((()=>{{setTimeout(()=>location.assign({url}),150);return {{ok:true,action:'navigate',url:{url}}}}})())")
+        }
+        "scroll" => {
+            let direction = direction.unwrap_or("down");
+            if !matches!(direction, "up" | "down") {
+                return Err("Scroll direction must be up or down".into());
+            }
+            let sign = if direction == "up" { -1i32 } else { 1i32 };
+            let amount = amount.unwrap_or(600).clamp(100, 2000) as i32 * sign;
+            format!("JSON.stringify((()=>{{window.scrollBy({{top:{amount},behavior:'smooth'}});return {{ok:true,action:'scroll',url:location.href}}}})())")
+        }
+        _ => return Err("Unsupported browser action".into()),
+    };
+    eval_selected_browser(app, script).await
+}
+
+fn validate_browser_agent_url(raw: &str) -> Result<Url, String> {
+    let parsed = Url::parse(raw).map_err(|e| format!("Invalid URL: {e}"))?;
+    if !matches!(parsed.scheme(), "http" | "https")
+        || parsed.host_str().is_none()
+        || !parsed.username().is_empty()
+        || parsed.password().is_some()
+    {
+        return Err(
+            "Browser agent navigation accepts HTTP(S) URLs without embedded credentials".into(),
+        );
+    }
+    Ok(parsed)
+}
+
+async fn eval_selected_browser<R: Runtime>(
+    app: &AppHandle<R>,
+    script: String,
+) -> Result<Value, String> {
+    let shared = app.state::<Shared>();
+    let id = {
+        let views = shared.views.lock().unwrap();
+        views
+            .visible_index()
+            .and_then(|index| views.defs.get(index).map(|def| def.id.clone()))
+            .ok_or("Select a browser tab before running a browser task")?
+    };
+    let webview = service_webview(app, &id).ok_or("Selected browser is unavailable")?;
+    let (sender, mut receiver) = tokio::sync::mpsc::unbounded_channel::<String>();
+    webview
+        .eval_with_callback(script, move |result| {
+            let _ = sender.send(result);
+        })
+        .map_err(|e| format!("Could not control the selected browser page: {e}"))?;
+    let raw = tokio::time::timeout(std::time::Duration::from_secs(12), receiver.recv())
+        .await
+        .map_err(|_| "Browser page did not respond within 12 seconds".to_string())?
+        .ok_or("Browser page closed before returning a result")?;
+    let serialized = serde_json::from_str::<String>(&raw).unwrap_or(raw);
+    let value = serde_json::from_str::<Value>(&serialized)
+        .map_err(|_| "Browser page returned an invalid result".to_string())?;
+    if let Some(error) = value.get("error").and_then(Value::as_str) {
+        return Err(error.to_string());
+    }
+    Ok(value)
+}
+
 pub fn select<R: Runtime>(app: &AppHandle<R>, index: i64) -> Result<(), String> {
     let shared = app.state::<Shared>();
     {
@@ -502,5 +634,14 @@ mod tests {
         assert!(def.matches("https://grok.com/chat"));
         assert!(def.matches("https://x.com/i/grok"));
         assert!(!def.matches("https://example.com/"));
+    }
+
+    #[test]
+    fn browser_agent_navigation_accepts_web_urls_only() {
+        assert!(validate_browser_agent_url("https://example.com/docs").is_ok());
+        assert!(validate_browser_agent_url("http://example.com").is_ok());
+        assert!(validate_browser_agent_url("javascript:alert(1)").is_err());
+        assert!(validate_browser_agent_url("file:///etc/passwd").is_err());
+        assert!(validate_browser_agent_url("https://user:pass@example.com").is_err());
     }
 }

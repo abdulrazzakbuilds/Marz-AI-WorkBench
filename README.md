@@ -12,6 +12,7 @@ Its aim is to make AI useful inside a real workflow: keep the goal, the next act
 - Turn a checkpoint into a contextual engineering or learning prompt in the editor; keep project notes and study takeaways with the mission.
 - Capture the readable text, page title, and URL from the selected browser tab and attach that source to a project task. Page capture is user-triggered, held in memory, and sent to the configured model only when the task starts.
 - Use the **Project Agent** in Mission Control with a local Ollama endpoint or any OpenAI-compatible API provider. Before proposing edits, it builds a bounded project map from file paths, root-level guides, and common build manifests, then reads relevant files. Each write requires your approval.
+- Use the **Browser Agent** to research through the selected embedded browser session. It inspects visible page text and controls, logs its steps, can pause for your help, and hands cited findings to a project task.
 - Follow a practical loop: **define → plan → build or practice → verify or teach back**.
 - Use the built-in prompt kit for code explanation, debugging, code review, study notes, quizzes, and essay outlines.
 - Write and compare code in up to five split Monaco editor panes with syntax highlighting.
@@ -20,7 +21,7 @@ Its aim is to make AI useful inside a real workflow: keep the goal, the next act
 
 Mission data and non-secret agent endpoint/model settings are saved locally in this app's browser storage on the current device. API keys stay in memory for the current session and are sent only to the endpoint you configure. When you ask the agent to inspect a project, the bounded project map and selected file contents are sent to that provider. Review provider privacy terms before using a cloud endpoint. The agent is limited to the selected project folder, skips hidden and generated folders, caps project-map and file reads, and requires approval before writing a proposed file. It does not execute shell commands automatically.
 
-The browser-to-project source bridge only reads the active page when you press **Use open page as source**. It captures up to 40,000 characters of readable page text, plus the title and URL. The text remains in memory until removed or the app closes; it is sent to your chosen model provider only when you start the task. Avoid capturing pages with private account information or secrets.
+The browser-to-project source bridge only reads the active page when you press **Use open page as source**. It captures up to 40,000 characters of readable page text, plus the title and URL. The Browser Agent reads the selected tab only after you start a task, then sends the current page text to your configured provider. Browser text and run history stay in memory unless you explicitly export or hand findings to the Project Agent. Avoid tasks involving private account details or secrets.
 
 ## Connect a model
 
@@ -30,11 +31,13 @@ The integration follows the [OpenAI function-calling tool flow](https://develope
 
 Select a project folder and describe the task. The agent first maps the project tree and reads recognized root guides and manifests (such as `AGENTS.md`, `README.md`, `package.json`, and `Cargo.toml`), then it can list and read relevant files and prepare complete-file proposals. Inspect each proposal and select **Approve and write** to apply it. Builds, tests, and shell commands remain under your control.
 
+Open **Browser Agent** to give a research task to the currently selected Marz browser tab. The agent can inspect the page, follow links, fill non-password fields, and scroll. Browser actions pause for review by default; turning off **Review each browser action** lets safe steps continue automatically, while sensitive, form-submit, and cross-site actions still request approval. The agent can ask you for help, pause, stop, export a JSON activity log, and prepare a cited handoff for Project Agent. It never reads password fields or runs in another browser process.
+
 ## Download for Windows
 
 Download the latest Windows `.exe` or installer from [GitHub Releases](https://github.com/abdulrazzakbuilds/Marz-AI-WorkBench/releases). The `.exe` is a direct app build; the installer is attached to the same release. Windows WebView2 is required. These downloads are not Authenticode-signed, so Windows may show an unknown-publisher prompt.
 
-Pushing a version tag such as `v0.3.1` runs the Windows release workflow. It runs the Rust tests, type-checks and builds the Tauri application, checks the executable format, and runs a startup smoke check before attaching the `.exe` and generated MSI to the GitHub release. Automatic updates remain off until a Marz signing key and update feed are configured. Startup panics are recorded in the system temporary folder as `marz-ai-workbench-panic.log` to help diagnose failures.
+Pushing a version tag such as `v0.4.0` runs the Windows release workflow. It runs the Rust tests, type-checks and builds the Tauri application, checks the executable format, and runs a startup smoke check before attaching the `.exe` and generated MSI to the GitHub release. Automatic updates remain off until a Marz signing key and update feed are configured. Startup panics are recorded in the system temporary folder as `marz-ai-workbench-panic.log` to help diagnose failures.
 
 For a portable build from source, follow the instructions below.
 
