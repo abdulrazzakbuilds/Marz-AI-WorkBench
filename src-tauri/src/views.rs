@@ -344,7 +344,7 @@ pub async fn capture_current_page<R: Runtime>(app: &AppHandle<R>) -> Result<Capt
 /// Return a compact, user-triggered view of the selected embedded browser page.
 pub async fn browser_agent_inspect<R: Runtime>(app: &AppHandle<R>) -> Result<Value, String> {
     let script = r#"JSON.stringify((()=>{const visible=(e)=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'&&e.getAttribute('aria-hidden')!=='true'};const label=(e)=>(e.getAttribute('aria-label')||e.innerText||e.getAttribute('placeholder')||e.title||'').trim().replace(/\s+/g,' ').slice(0,240);const all=[...document.querySelectorAll('a[href],button,input:not([type=password]):not([type=hidden]),textarea,select,[role=button],[role=link]')].filter(visible).slice(0,80);return {title:document.title||'',url:location.href,text:(document.body?.innerText||'').slice(0,14000),elements:all.map((e,index)=>({ref:index,label:label(e),tag:e.tagName.toLowerCase(),type:e.getAttribute('type')||(e.tagName==='BUTTON'&&e.form?'submit':''),href:e.href||'',placeholder:e.getAttribute('placeholder')||'',disabled:!!e.disabled})).filter(e=>e.label||e.href||['input','textarea','select'].includes(e.tag))}})())"#;
-    eval_selected_browser(app, script).await
+    eval_selected_browser(app, script.to_string()).await
 }
 
 pub fn browser_agent_target<R: Runtime>(app: &AppHandle<R>) -> Result<Value, String> {
