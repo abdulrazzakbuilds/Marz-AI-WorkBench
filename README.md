@@ -1,32 +1,38 @@
-# Marz AI WorkBench
+# Marz AI Workbench
 
-**Marz AI WorkBench** is the public project brief for a unified AI workspace: a desktop-class environment for working across multiple AI providers, code surfaces, terminals, notes, and automation flows.
+Marz AI Workbench is a desktop workspace for developers and students. It brings AI chat services, a coding editor, and command-line tools together so you can research, write, build, and study in one window.
 
-The project direction is to treat AI tooling as an integrated workbench rather than a collection of disconnected chat tabs.
+## What you can do
 
-## Intended Capabilities
+- Work across ChatGPT, Gemini, Claude, DeepSeek, Grok, Perplexity, and other supported AI services.
+- Draft a prompt once and send it to one or several AI services.
+- Use the built-in prompt kit for code explanation, debugging, code review, study notes, quizzes, and essay outlines.
+- Write and compare code in up to five split Monaco editor panes with syntax highlighting.
+- Run command-line tools such as Claude Code, Gemini CLI, and Codex CLI in integrated terminal tabs.
+- Save prompt history, configure reusable snippets, reorder tabs, and switch between dark and light themes.
 
-- Multi-provider AI access for model comparison and task routing.
-- Monaco-style code editing for AI-assisted development workflows.
-- Terminal integration for command execution and implementation loops.
-- Workspace memory for project context, decisions, and reusable prompts.
-- Automation panels for repeatable technical tasks.
-- Provider abstraction so the app can evolve as the model ecosystem changes.
+## Run from source
 
-## Architecture Direction
+Requirements: Node.js, Rust, and the platform dependencies for [Tauri 2](https://v2.tauri.app/start/prerequisites/).
 
-| Layer | Responsibility |
-| --- | --- |
-| Desktop shell | Electron-based application surface and local workspace integration. |
-| Frontend | React and TypeScript UI for panels, editors, provider controls, and workflow views. |
-| Provider layer | Normalized API boundary for ChatGPT, Gemini, Claude, and other model providers. |
-| Workspace layer | Local project context, notes, prompts, task state, and file-aware workflows. |
-| Automation layer | Repeatable actions for development, research, and operations tasks. |
+```sh
+npm install
+npm run dev
+```
 
-## Status
+To build the renderer and check TypeScript:
 
-This repository currently documents the public architecture direction. Implementation work is being staged behind the concept and will be published when the first usable slice is ready.
+```sh
+npm run typecheck
+npm run build:renderer
+```
 
-## Build Standard
+Platform release scripts are included for Windows and macOS. Automatic updates are disabled until Marz AI Workbench has its own release signing key and release feed.
 
-The goal is not another wrapper. The goal is a practical AI command center with clear architecture, real workflows, and enough verification that the system can be extended without becoming fragile.
+## About
+
+- **Project:** Marz AI Workbench
+- **Maintainer:** Mohammed AbdulRazzak ([abdulrazzakbuilds](https://github.com/abdulrazzakbuilds), abdulrazzakmohd01@gmail.com)
+- **License:** MIT. See [LICENSE.txt](LICENSE.txt) for copyright notices and license terms.
+
+Marz AI Workbench is an independent community project and is not affiliated with the AI service providers it can open.

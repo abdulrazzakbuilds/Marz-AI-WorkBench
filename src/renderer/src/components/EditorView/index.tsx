@@ -1,0 +1,257 @@
+import { forwardRef, type RefObject } from 'react';
+import { Box, Chip } from '@mui/material';
+
+import { getSupportedLanguages } from '../MonacoEditor';
+import { MonacoEditors, type MonacoEditorsHandle } from '../MonacoEditors';
+import { EditorTabs } from './EditorTabs';
+import { EditorToolbar } from './EditorToolbar';
+import { LogSelector } from './LogSelector';
+
+import type { TouchRippleActions } from '@mui/material/ButtonBase/TouchRipple';
+import type * as monaco from 'monaco-editor';
+import type { Log } from '../../types/log.types';
+import type { Tab } from '../../types/tab.types';
+
+interface EditorViewProps {
+  // チップ関連
+  isChipVisible: boolean;
+  latestVersion: string | null;
+  onChipClick: () => void;
+  onChipClose: () => void;
+
+  // エディタ関連
+  editorIndex: number;
+  language: string;
+  fontSize: number;
+  darkMode: boolean;
+  commandKey: string;
+  isInitialized: boolean;
+  activeTab: Tab | null;
+  isTerminalActive: boolean;
+
+  // ログ関連
+  logs: Log[];
+  selectedLog: Log | null;
+
+  // イベントハンドラ
+  onEditorTabChange: (event: React.SyntheticEvent, index: number) => void;
+  onLicenseClick: () => void;
+  onSelectLog: (logId: number) => void;
+  onDeleteLog: (logId: number, event: React.MouseEvent) => void;
+  onNextLog: () => void;
+  onPreviousLog: () => void;
+  onLanguageChange: (language: string) => void;
+  onFontSizeChange: (size: number) => void;
+  onDarkModeToggle: () => void;
+  onClearClick: () => void;
+  onSaveClick: () => void;
+  onCopyClick: () => void;
+  onSendClick: (sendToAll: boolean) => void;
+  onInsertPrompt: (prompt: string) => void;
+  sendTargets: Record<string, boolean>;
+  onToggleSendTarget: (tabId: string) => void;
+  boilerplates: Record<string, string>;
+  boilerplateBank: 'A' | 'B' | 'C' | 'D' | 'E';
+  onBoilerplateBankChange: (bank: 'A' | 'B' | 'C' | 'D' | 'E') => void;
+  isCtrlHeld: boolean;
+  isAltHeld: boolean;
+  activeArrowKey:
+    | 'up'
+    | 'down'
+    | 'left'
+    | 'right'
+    | 'enter'
+    | 'backspace'
+    | null;
+  onBoilerplateChange: (key: string, text: string) => void;
+  onInsertBoilerplate: (key: string) => void;
+  onSendArrowKey: (
+    direction: 'up' | 'down' | 'left' | 'right' | 'enter' | 'backspace',
+  ) => void;
+  onSendControlKey: (key: string) => void;
+  lastFocusedEditorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
+  editorsRef: RefObject<MonacoEditorsHandle | null>;
+
+  // Refs
+  sendButtonRef: RefObject<HTMLButtonElement | null>;
+  copyButtonRef: RefObject<HTMLButtonElement | null>;
+  clearButtonRef: RefObject<HTMLButtonElement | null>;
+  saveButtonRef: RefObject<HTMLButtonElement | null>;
+  newerLogButtonRef: RefObject<HTMLButtonElement | null>;
+  olderLogButtonRef: RefObject<HTMLButtonElement | null>;
+  sendButtonTouchRippleRef: RefObject<TouchRippleActions | null>;
+  copyButtonTouchRippleRef: RefObject<TouchRippleActions | null>;
+  clearButtonTouchRippleRef: RefObject<TouchRippleActions | null>;
+  saveButtonTouchRippleRef: RefObject<TouchRippleActions | null>;
+  newerLogButtonTouchRippleRef: RefObject<TouchRippleActions | null>;
+  olderLogButtonTouchRippleRef: RefObject<TouchRippleActions | null>;
+
+  // その他
+  osInfo: string;
+}
+
+export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
+  (props, ref) => {
+    const {
+      isChipVisible,
+      latestVersion,
+      onChipClick,
+      onChipClose,
+      editorIndex,
+      language,
+      fontSize,
+      darkMode,
+      commandKey,
+      isInitialized,
+      activeTab,
+      isTerminalActive,
+      logs,
+      selectedLog,
+      onEditorTabChange,
+      onLicenseClick,
+      onSelectLog,
+      onDeleteLog,
+      onNextLog,
+      onPreviousLog,
+      onLanguageChange,
+      onFontSizeChange,
+      onDarkModeToggle,
+      onClearClick,
+      onSaveClick,
+      onCopyClick,
+      onSendClick,
+      onInsertPrompt,
+      sendTargets,
+      onToggleSendTarget,
+      sendButtonRef,
+      copyButtonRef,
+      clearButtonRef,
+      saveButtonRef,
+      newerLogButtonRef,
+      olderLogButtonRef,
+      sendButtonTouchRippleRef,
+      copyButtonTouchRippleRef,
+      clearButtonTouchRippleRef,
+      saveButtonTouchRippleRef,
+      newerLogButtonTouchRippleRef,
+      olderLogButtonTouchRippleRef,
+      osInfo,
+      editorsRef,
+      boilerplates,
+      boilerplateBank,
+      onBoilerplateBankChange,
+      isCtrlHeld,
+      isAltHeld,
+      activeArrowKey,
+      onBoilerplateChange,
+      onInsertBoilerplate,
+      onSendArrowKey,
+      onSendControlKey,
+      lastFocusedEditorRef,
+    } = props;
+
+    const fontSizeOptions = [
+      5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+      25, 26, 27, 28, 29, 30,
+    ];
+
+    return (
+      <Box sx={{ height: '100%' }} ref={ref}>
+        {isChipVisible && (
+          <Chip
+            label={`Update? v${latestVersion}`}
+            color="primary"
+            onClick={onChipClick}
+            onDelete={onChipClose}
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              m: 1,
+              zIndex: 1000,
+            }}
+          />
+        )}
+
+        <EditorTabs
+          editorIndex={editorIndex}
+          onTabChange={onEditorTabChange}
+          onLicenseClick={onLicenseClick}
+        />
+
+        <LogSelector
+          logs={logs}
+          selectedLog={selectedLog}
+          commandKey={commandKey}
+          onSelectLog={onSelectLog}
+          onDeleteLog={onDeleteLog}
+          onNextLog={onNextLog}
+          onPreviousLog={onPreviousLog}
+          language={language}
+          supportedLanguages={getSupportedLanguages()}
+          onLanguageChange={onLanguageChange}
+          newerLogButtonRef={newerLogButtonRef}
+          olderLogButtonRef={olderLogButtonRef}
+          newerLogButtonTouchRippleRef={newerLogButtonTouchRippleRef}
+          olderLogButtonTouchRippleRef={olderLogButtonTouchRippleRef}
+        />
+
+        <MonacoEditors
+          darkMode={darkMode}
+          editorIndex={editorIndex}
+          language={language}
+          fontSize={fontSize}
+          sendButtonRef={sendButtonRef}
+          copyButtonRef={copyButtonRef}
+          clearButtonRef={clearButtonRef}
+          saveButtonRef={saveButtonRef}
+          newerLogButtonRef={newerLogButtonRef}
+          olderLogButtonRef={olderLogButtonRef}
+          osInfo={osInfo}
+          isTerminalActive={isTerminalActive}
+          lastFocusedEditorRef={lastFocusedEditorRef}
+          ref={editorsRef}
+        />
+
+        <EditorToolbar
+          fontSize={fontSize}
+          darkMode={darkMode}
+          commandKey={commandKey}
+          isInitialized={isInitialized}
+          activeTab={activeTab}
+          isTerminalActive={isTerminalActive}
+          fontSizeOptions={fontSizeOptions}
+          onFontSizeChange={onFontSizeChange}
+          onDarkModeToggle={onDarkModeToggle}
+          onClearClick={onClearClick}
+          onSaveClick={onSaveClick}
+          onCopyClick={onCopyClick}
+          onSendClick={onSendClick}
+          onInsertPrompt={onInsertPrompt}
+          sendTargets={sendTargets}
+          onToggleSendTarget={onToggleSendTarget}
+          clearButtonRef={clearButtonRef}
+          saveButtonRef={saveButtonRef}
+          copyButtonRef={copyButtonRef}
+          sendButtonRef={sendButtonRef}
+          clearButtonTouchRippleRef={clearButtonTouchRippleRef}
+          saveButtonTouchRippleRef={saveButtonTouchRippleRef}
+          copyButtonTouchRippleRef={copyButtonTouchRippleRef}
+          sendButtonTouchRippleRef={sendButtonTouchRippleRef}
+          boilerplates={boilerplates}
+          boilerplateBank={boilerplateBank}
+          onBoilerplateBankChange={onBoilerplateBankChange}
+          isCtrlHeld={isCtrlHeld}
+          isAltHeld={isAltHeld}
+          activeArrowKey={activeArrowKey}
+          onBoilerplateChange={onBoilerplateChange}
+          onInsertBoilerplate={onInsertBoilerplate}
+          onSendArrowKey={onSendArrowKey}
+          onSendControlKey={onSendControlKey}
+        />
+      </Box>
+    );
+  },
+);
+
+EditorView.displayName = 'EditorView';

@@ -1,0 +1,17 @@
+node_modules
+dist
+out
+.DS_Store
+*.log*
+.env
+.env.local
+*.env
+*.local
+.serena
+.mcp
+.claude
+.mcp.json
+
+# Tauri 版: アップデート署名鍵（秘密鍵を含む）とリリース成果物の置き場
+.tauri/
+release/

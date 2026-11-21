@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Marz AI Workbench",
+  "version": "../package.json",
+  "identifier": "com.marz.aiworkbench",
+  "build": {
+    "beforeDevCommand": "npm run dev:renderer",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build:renderer",
+    "frontendDist": "../out/renderer"
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "app", "dmg", "appimage", "deb"],
+    "publisher": "Mohammed AbdulRazzak",
+    "homepage": "https://github.com/abdulrazzakbuilds/Marz-AI-WorkBench",
+    "category": "Utility",
+    "shortDescription": "AI, coding, terminal, and study workspace",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "entitlements": "Entitlements.plist",
+      "minimumSystemVersion": "11.0"
+    },
+    "windows": {
+      "wix": {
+        "language": ["en-US"]
+      }
+    }
+  }
+}

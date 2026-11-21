@@ -1,0 +1,8 @@
+---
+alwaysApply: true
+---
+
+回答は日本語で行ってください。
+
+プロジェクトの構成・開発コマンド・設計上の注意は @AGENTS.md にまとめています（Tauri 2 版。Electron 版は v1.7.2 で終了）。
+リリース手順は @docs/tauri-release.md を参照してください。
