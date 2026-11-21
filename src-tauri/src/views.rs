@@ -307,13 +307,14 @@ pub async fn capture_current_page<R: Runtime>(app: &AppHandle<R>) -> Result<Capt
     };
     let webview = service_webview(app, &id).ok_or("Selected browser is unavailable")?;
     let script = r#"JSON.stringify({title:document.title||'',url:location.href,text:(document.body?.innerText||'').slice(0,40000)})"#;
-    let (sender, receiver) = tokio::sync::oneshot::channel::<String>();
+    let (sender, mut receiver) = tokio::sync::mpsc::unbounded_channel::<String>();
     webview
         .eval_with_callback(script.to_string(), move |result| {
             let _ = sender.send(result);
         })
         .map_err(|e| format!("Could not read the selected page: {e}"))?;
     let result = receiver
+        .recv()
         .await
         .map_err(|_| "Browser page capture did not return a result".to_string())?;
     let serialized = serde_json::from_str::<String>(&result).unwrap_or(result);
