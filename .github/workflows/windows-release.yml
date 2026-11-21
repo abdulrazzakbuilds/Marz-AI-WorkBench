@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -50,8 +51,20 @@ jobs:
           if ($msi) { Copy-Item $msi.FullName 'release-assets/' }
           Get-ChildItem release-assets | Select-Object Name,Length
 
+      - name: Launch the Windows app
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path 'src-tauri/target/release/marz-ai-workbench.exe').Path
+          $process = Start-Process -FilePath $exe -PassThru -WindowStyle Hidden
+          Start-Sleep -Seconds 8
+          $process.Refresh()
+          if ($process.HasExited) { throw "The app exited during startup with code $($process.ExitCode)." }
+          Stop-Process -Id $process.Id -Force
+          Write-Output 'The app stayed running for the startup smoke check.'
+
       - name: Publish download assets
         uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           name: Marz AI Workbench ${{ github.ref_name }}
           generate_release_notes: true
