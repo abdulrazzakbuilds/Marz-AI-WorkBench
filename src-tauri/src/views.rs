@@ -316,7 +316,7 @@ pub async fn capture_current_page<R: Runtime>(app: &AppHandle<R>) -> Result<Capt
     let result = receiver
         .recv()
         .await
-        .map_err(|_| "Browser page capture did not return a result".to_string())?;
+        .ok_or_else(|| "Browser page capture did not return a result".to_string())?;
     let serialized = serde_json::from_str::<String>(&result).unwrap_or(result);
     let page: serde_json::Value = serde_json::from_str(&serialized)
         .map_err(|_| "The selected page did not return readable content".to_string())?;
