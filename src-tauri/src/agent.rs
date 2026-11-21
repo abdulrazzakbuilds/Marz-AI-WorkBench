@@ -228,9 +228,14 @@ pub async fn agent_chat(
 mod tests {
     use super::*;
 
+    fn test_root() -> PathBuf {
+        let id = TEMP_FILE_ID.fetch_add(1, Ordering::Relaxed);
+        std::env::temp_dir().join(format!("marz-agent-test-{}-{id}", std::process::id()))
+    }
+
     #[test]
     fn project_paths_reject_parent_traversal() {
-        let root = std::env::temp_dir().join(format!("marz-agent-test-{}", std::process::id()));
+        let root = test_root();
         fs::create_dir_all(&root).unwrap();
         assert!(project_path(root.to_str().unwrap(), "../outside.txt").is_err());
         let _ = fs::remove_dir_all(root);
@@ -238,7 +243,7 @@ mod tests {
 
     #[test]
     fn project_paths_accept_relative_files() {
-        let root = std::env::temp_dir().join(format!("marz-agent-test-{}", std::process::id()));
+        let root = test_root();
         fs::create_dir_all(&root).unwrap();
         fs::write(root.join("inside.txt"), "ok").unwrap();
         assert!(project_path(root.to_str().unwrap(), "inside.txt").is_ok());
