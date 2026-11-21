@@ -1,15 +1,30 @@
 # Marz AI Workbench
 
-Marz AI Workbench is a desktop workspace for developers and students. It brings AI chat services, a coding editor, and command-line tools together so you can research, write, build, and study in one window.
+Marz AI Workbench is a desktop workbench for turning ideas into finished work and durable understanding. Developers can plan a change, work through implementation steps, use AI and command-line tools, then record what they verified. Students can turn a subject into a sequence of learning steps, practice recall, and keep their own review notes.
+
+Its aim is to make AI useful inside a real workflow: keep the goal, the next action, the work surface, and the verification or learning outcome together. The app combines AI services, a coding editor, terminals, and a local project board instead of treating chat as the end product.
 
 ## What you can do
 
 - Work across ChatGPT, Gemini, Claude, DeepSeek, Grok, Perplexity, and other supported AI services.
 - Draft a prompt once and send it to one or several AI services.
+- Open **Mission Control** to create build or study missions with an outcome, checkpoints, and progress tracking.
+- Turn a checkpoint into a contextual engineering or learning prompt in the editor; keep project notes and study takeaways with the mission.
+- Follow a practical loop: **define → plan → build or practice → verify or teach back**.
 - Use the built-in prompt kit for code explanation, debugging, code review, study notes, quizzes, and essay outlines.
 - Write and compare code in up to five split Monaco editor panes with syntax highlighting.
 - Run command-line tools such as Claude Code, Gemini CLI, and Codex CLI in integrated terminal tabs.
 - Save prompt history, configure reusable snippets, reorder tabs, and switch between dark and light themes.
+
+Mission data is saved locally in this app's browser storage on the current device. It is not uploaded or synchronized. AI providers and command-line tools are separate integrations; their own data handling depends on the service or tool you choose.
+
+## Download for Windows
+
+Download the latest Windows `.exe` or installer from [GitHub Releases](https://github.com/abdulrazzakbuilds/Marz-AI-WorkBench/releases). The `.exe` is a direct app build; the installer is attached to the same release. Windows WebView2 is required. These downloads are not Authenticode-signed, so Windows may show an unknown-publisher prompt.
+
+Pushing a version tag such as `v0.1.0` runs the Windows release workflow. It type-checks and builds the Tauri application, checks that the output is a Windows executable, then attaches the `.exe` and generated MSI to the GitHub release.
+
+For a portable build from source, follow the instructions below.
 
 ## Run from source
 

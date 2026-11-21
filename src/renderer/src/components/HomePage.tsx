@@ -18,6 +18,7 @@ import { useEditorStore } from '../stores/useEditorStore';
 import { BrowserView } from './BrowserView';
 import { EditorView } from './EditorView';
 import { LicenseDialog } from './EditorView/LicenseDialog';
+import { MissionControl } from './MissionControl';
 import { cleanupAllTerminals } from './TerminalView';
 import { UpdateDialog } from './UpdateDialog';
 
@@ -85,6 +86,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
   const [isAppImage, setIsAppImage] = useState(false);
   const [isChipVisible, setIsChipVisible] = useState(false);
   const [isLicenseDialogOpen, setIsLicenseDialogOpen] = useState(false);
+  const [isMissionControlOpen, setIsMissionControlOpen] = useState(false);
   const [boilerplates, setBoilerplates] = useState<Record<string, string>>({});
   const [boilerplateBank, setBoilerplateBank] = useState<
     'A' | 'B' | 'C' | 'D' | 'E'
@@ -522,6 +524,7 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             selectedLog={selectedLog}
             onEditorTabChange={handleEditorTabChange}
             onLicenseClick={() => setIsLicenseDialogOpen(true)}
+            onMissionControlClick={() => setIsMissionControlOpen(true)}
             onSelectLog={handleSelectedLogChange}
             onDeleteLog={handleDeleteLog}
             onNextLog={handleNextLog}
@@ -561,6 +564,11 @@ export const HomePage = ({ darkMode, setDarkMode }: HomePageProps) => {
             olderLogButtonTouchRippleRef={olderLogButtonTouchRippleRef}
             editorsRef={editorsRef}
             osInfo={osInfo}
+          />
+          <MissionControl
+            open={isMissionControlOpen}
+            onClose={() => setIsMissionControlOpen(false)}
+            onUsePrompt={handleInsertPrompt}
           />
           <LicenseDialog
             currentVersion={currentVersion}

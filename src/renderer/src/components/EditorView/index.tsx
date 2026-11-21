@@ -36,6 +36,7 @@ interface EditorViewProps {
   // イベントハンドラ
   onEditorTabChange: (event: React.SyntheticEvent, index: number) => void;
   onLicenseClick: () => void;
+  onMissionControlClick: () => void;
   onSelectLog: (logId: number) => void;
   onDeleteLog: (logId: number, event: React.MouseEvent) => void;
   onNextLog: () => void;
@@ -109,6 +110,7 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
       selectedLog,
       onEditorTabChange,
       onLicenseClick,
+      onMissionControlClick,
       onSelectLog,
       onDeleteLog,
       onNextLog,
@@ -177,6 +179,7 @@ export const EditorView = forwardRef<HTMLDivElement, EditorViewProps>(
           editorIndex={editorIndex}
           onTabChange={onEditorTabChange}
           onLicenseClick={onLicenseClick}
+          onMissionControlClick={onMissionControlClick}
         />
 
         <LogSelector

@@ -1,0 +1,58 @@
+name: Windows desktop release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Type check and build the Windows app
+        run: npm run build
+
+      - name: Prepare and inspect release files
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $exe = Get-Item 'src-tauri/target/release/marz-ai-workbench.exe'
+          if ($exe.Length -lt 1MB) { throw "Executable is unexpectedly small ($($exe.Length) bytes)." }
+          $stream = [System.IO.File]::OpenRead($exe.FullName)
+          try {
+            $signature = New-Object byte[] 2
+            [void]$stream.Read($signature, 0, 2)
+          } finally {
+            $stream.Dispose()
+          }
+          if ($signature[0] -ne 0x4D -or $signature[1] -ne 0x5A) { throw 'The output is not a Windows PE executable.' }
+          New-Item -ItemType Directory -Path release-assets -Force | Out-Null
+          Copy-Item $exe.FullName "release-assets/Marz-AI-WorkBench-v$version.exe"
+          $msi = Get-ChildItem 'src-tauri/target/release/bundle/msi/*.msi' | Select-Object -First 1
+          if ($msi) { Copy-Item $msi.FullName 'release-assets/' }
+          Get-ChildItem release-assets | Select-Object Name,Length
+
+      - name: Publish download assets
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Marz AI Workbench ${{ github.ref_name }}
+          generate_release_notes: true
+          files: release-assets/*

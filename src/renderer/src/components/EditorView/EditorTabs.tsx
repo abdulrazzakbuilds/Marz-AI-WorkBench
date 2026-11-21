@@ -1,5 +1,5 @@
-import { InfoOutlined } from '@mui/icons-material';
-import { Box, IconButton, Tab, Tabs, Tooltip } from '@mui/material';
+import { AutoAwesomeRounded, InfoOutlined } from '@mui/icons-material';
+import { Box, Button, IconButton, Tab, Tabs, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/system';
 
 import {
@@ -14,12 +14,14 @@ interface EditorTabsProps {
   editorIndex: number;
   onTabChange: (event: React.SyntheticEvent, index: number) => void;
   onLicenseClick: () => void;
+  onMissionControlClick: () => void;
 }
 
 export function EditorTabs({
   editorIndex,
   onTabChange,
   onLicenseClick,
+  onMissionControlClick,
 }: EditorTabsProps) {
   const theme = useTheme();
 
@@ -62,6 +64,15 @@ export function EditorTabs({
           );
         })}
       </Tabs>
+      <Button
+        onClick={onMissionControlClick}
+        startIcon={<AutoAwesomeRounded />}
+        size="small"
+        className="mission-launch-button"
+        sx={{ mr: 1, borderRadius: 2, whiteSpace: 'nowrap' }}
+      >
+        Mission Control
+      </Button>
       <Tooltip title="License Information" placement="left" arrow>
         <IconButton
           onClick={onLicenseClick}
