@@ -283,6 +283,63 @@ pub fn resize_visible<R: Runtime>(
 }
 
 /// タブ選択。index が負ならターミナルが選ばれた。
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CapturedPage {
+    pub title: String,
+    pub url: String,
+    pub text: String,
+}
+
+/// Capture readable text only when the user explicitly requests it.
+pub async fn capture_current_page<R: Runtime>(app: &AppHandle<R>) -> Result<CapturedPage, String> {
+    let shared = app.state::<Shared>();
+    let id = {
+        let views = shared.views.lock().unwrap();
+        let index = views
+            .visible_index()
+            .ok_or("Select a browser tab before capturing a page")?;
+        views
+            .defs
+            .get(index)
+            .map(|def| def.id.clone())
+            .ok_or("Selected browser tab is unavailable")?
+    };
+    let webview = service_webview(app, &id).ok_or("Selected browser is unavailable")?;
+    let script = r#"JSON.stringify({title:document.title||'',url:location.href,text:(document.body?.innerText||'').slice(0,40000)})"#;
+    let (sender, receiver) = tokio::sync::oneshot::channel::<String>();
+    webview
+        .eval_with_callback(script.to_string(), move |result| {
+            let _ = sender.send(result);
+        })
+        .map_err(|e| format!("Could not read the selected page: {e}"))?;
+    let result = receiver
+        .await
+        .map_err(|_| "Browser page capture did not return a result".to_string())?;
+    let serialized = serde_json::from_str::<String>(&result).unwrap_or(result);
+    let page: serde_json::Value = serde_json::from_str(&serialized)
+        .map_err(|_| "The selected page did not return readable content".to_string())?;
+    let url = page["url"].as_str().unwrap_or_default().to_string();
+    let is_http_page = Url::parse(&url)
+        .map(|parsed| matches!(parsed.scheme(), "http" | "https"))
+        .unwrap_or(false);
+    if !is_http_page {
+        return Err("Only HTTP(S) pages can be captured".into());
+    }
+    let text = page["text"].as_str().unwrap_or_default().trim().to_string();
+    if text.is_empty() {
+        return Err("The selected page has no readable text".into());
+    }
+    Ok(CapturedPage {
+        title: page["title"]
+            .as_str()
+            .unwrap_or("Untitled page")
+            .to_string(),
+        url,
+        text,
+    })
+}
+
 pub fn select<R: Runtime>(app: &AppHandle<R>, index: i64) -> Result<(), String> {
     let shared = app.state::<Shared>();
     {

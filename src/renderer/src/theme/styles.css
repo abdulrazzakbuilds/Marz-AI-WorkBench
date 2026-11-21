@@ -393,3 +393,337 @@ body {
     transition: none !important;
   }
 }
+
+/* Mission Studio: a brighter, more expressive workspace for long-running work. */
+.mission-dialog {
+  max-width: 1500px !important;
+  color: #20183c;
+  background: #f7f5ff !important;
+  border: 1px solid rgba(116, 93, 205, 0.2);
+  border-radius: 28px !important;
+  box-shadow: 0 32px 110px rgba(24, 15, 66, 0.36) !important;
+}
+.mission-content {
+  background:
+    radial-gradient(
+      ellipse at 92% 6%,
+      rgba(255, 144, 112, 0.11),
+      transparent 34%
+    ),
+    radial-gradient(ellipse at 4% 24%, rgba(92, 220, 197, 0.1), transparent 34%),
+    #f7f5ff;
+}
+.mission-topbar {
+  height: 84px;
+  padding: 0 34px;
+  color: #fff;
+  background: linear-gradient(105deg, #1d1640, #30236a 62%, #145859);
+}
+.mission-mark {
+  width: 46px;
+  height: 46px;
+  color: #20183c;
+  background: linear-gradient(140deg, #b6fff0, #ffc27a 80%);
+  box-shadow:
+    0 0 0 5px rgba(255, 255, 255, 0.09),
+    0 8px 25px rgba(0, 0, 0, 0.25);
+  animation: mission-mark-glow 3.5s ease-in-out infinite;
+}
+.mission-topbar .MuiTypography-h5 {
+  letter-spacing: -0.035em;
+}
+.mission-topbar .MuiIconButton-root {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 1.5rem;
+  transition:
+    transform 180ms ease,
+    background 180ms ease;
+}
+.mission-topbar .MuiIconButton-root:hover {
+  transform: rotate(90deg);
+  background: rgba(255, 255, 255, 0.13);
+}
+.mission-topbar .MuiButton-root {
+  min-height: 40px;
+  color: #eae8ff;
+  border-color: rgba(255, 255, 255, 0.23);
+  border-radius: 13px;
+  text-transform: none;
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+.mission-topbar .MuiButton-root:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.1);
+}
+.mission-topbar .MuiButton-contained {
+  color: #21183d;
+  background: linear-gradient(100deg, #bcfff0, #fbd589);
+  box-shadow: 0 7px 20px rgba(25, 230, 190, 0.2);
+}
+.mission-hero {
+  min-height: 260px;
+  padding: 42px 48px 40px;
+  background: linear-gradient(112deg, #25164f 0%, #4c32a3 43%, #146b71 100%);
+}
+.mission-hero::before {
+  position: absolute;
+  z-index: -1;
+  inset: -20% -10% -30% 42%;
+  content: "";
+  opacity: 0.75;
+  background: conic-gradient(
+    from 210deg,
+    transparent,
+    rgba(255, 183, 106, 0.38),
+    rgba(95, 255, 218, 0.26),
+    transparent 72%
+  );
+  filter: blur(30px);
+  animation: mission-hue-turn 18s linear infinite;
+}
+.mission-kicker {
+  color: #c7fff0;
+  letter-spacing: 0.2em;
+}
+.mission-headline {
+  max-width: 790px;
+  font-size: clamp(2.6rem, 4.2vw, 4.3rem) !important;
+  line-height: 0.98 !important;
+  text-shadow: 0 8px 35px rgba(15, 8, 49, 0.25);
+}
+.mission-subtitle {
+  max-width: 610px;
+  font-size: 1.05rem !important;
+  color: rgba(255, 255, 255, 0.84);
+}
+.mission-hero .MuiChip-root {
+  min-height: 34px;
+  border-radius: 999px;
+}
+.mission-orb-one {
+  width: 270px;
+  height: 270px;
+  top: -130px;
+  right: 11%;
+  border-color: rgba(255, 222, 157, 0.42);
+  box-shadow:
+    0 0 0 26px rgba(255, 222, 157, 0.055),
+    0 0 85px rgba(120, 255, 225, 0.21);
+  animation: mission-float 6s ease-in-out infinite;
+}
+.mission-orb-two {
+  width: 125px;
+  height: 125px;
+  right: 5%;
+  bottom: -73px;
+  border-color: rgba(170, 255, 238, 0.6);
+}
+.mission-grid {
+  grid-template-columns: minmax(300px, 0.82fr) minmax(420px, 1.18fr);
+  gap: 20px;
+  padding: 22px 30px 18px;
+}
+.mission-panel,
+.mission-detail {
+  border-color: rgba(105, 79, 184, 0.15);
+  border-radius: 22px !important;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 9px 34px rgba(49, 32, 107, 0.055);
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+}
+.mission-create {
+  background: linear-gradient(155deg, #fff 2%, #f4f0ff 66%, #ecfffb 100%);
+}
+.mission-create .MuiSvgIcon-root,
+.mission-empty-icon {
+  color: #6c40e4;
+}
+.mission-create .MuiOutlinedInput-root,
+.mission-create .MuiSelect-select {
+  border-radius: 12px;
+}
+.mission-create-button {
+  min-height: 48px;
+  color: #fff !important;
+  background: linear-gradient(100deg, #7042ed, #435fe7 58%, #168b87) !important;
+  box-shadow: 0 8px 22px rgba(92, 65, 219, 0.25) !important;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease !important;
+}
+.mission-create-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 13px 27px rgba(92, 65, 219, 0.33) !important;
+}
+.mission-eyebrow {
+  color: #6844cc !important;
+}
+.mission-board .MuiChip-root {
+  color: #6042b4;
+  border-color: rgba(104, 68, 204, 0.2);
+  background: #f1ecff;
+}
+.mission-list-item {
+  min-height: 60px;
+  border: 1px solid rgba(92, 74, 155, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+}
+.mission-list-item:hover,
+.mission-list-item.selected {
+  transform: translateY(-2px);
+  border-color: rgba(111, 70, 224, 0.32);
+  background: linear-gradient(100deg, #f0eaff, #e7fff8);
+  box-shadow: 0 8px 18px rgba(65, 49, 123, 0.1);
+}
+.mission-list-icon {
+  width: 40px;
+  height: 40px;
+  color: #5e45d2;
+  background: linear-gradient(145deg, #e7deff, #d9fff3);
+}
+.mission-detail {
+  margin: 2px 30px 30px;
+  padding: 25px;
+}
+.mission-detail:hover {
+  border-color: rgba(105, 79, 184, 0.24);
+  box-shadow: 0 14px 38px rgba(49, 32, 107, 0.09);
+}
+.mission-detail .MuiChip-outlinedPrimary {
+  color: #6541cc;
+  border-color: rgba(104, 68, 204, 0.3);
+  background: #f3efff;
+}
+.mission-progress-ring {
+  width: 48px;
+  height: 48px;
+  color: #4732a5;
+  border-color: #8d6aff;
+  background: linear-gradient(135deg, #f4efff, #e5fff7);
+  box-shadow: 0 0 0 5px rgba(136, 106, 255, 0.08);
+}
+.mission-handoff {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 8px 0 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(74, 165, 147, 0.23);
+  border-radius: 16px;
+  background: linear-gradient(
+    100deg,
+    rgba(225, 255, 245, 0.9),
+    rgba(247, 242, 255, 0.92)
+  );
+}
+.mission-step {
+  min-height: 58px;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+}
+.mission-step:hover {
+  border-color: rgba(114, 81, 222, 0.13);
+  background: linear-gradient(100deg, #f5f0ff, #edfffa);
+}
+.mission-step .MuiButton-root,
+.mission-detail > .MuiStack .MuiButton-outlined {
+  border-radius: 11px;
+  text-transform: none;
+}
+.mission-step-number {
+  width: 30px;
+  height: 30px;
+  color: #5f40d0;
+  border-color: #9679ed;
+  background: #f5f0ff;
+}
+.mission-agent {
+  padding: 24px 34px 34px;
+  background: linear-gradient(
+    145deg,
+    rgba(246, 242, 255, 0.82),
+    rgba(236, 255, 250, 0.68)
+  );
+}
+.mission-agent > .mission-panel {
+  border-color: rgba(105, 79, 184, 0.18);
+  background: linear-gradient(145deg, #fff, #f6f1ff 70%, #edfffb);
+}
+.mission-agent .MuiButton-contained {
+  background: linear-gradient(105deg, #7042ed, #385fe0 58%, #168b87);
+}
+.mission-agent-diff {
+  color: #f2f1ff;
+  background: #211b3d;
+}
+@keyframes mission-mark-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 5px rgba(255, 255, 255, 0.09),
+      0 8px 25px rgba(0, 0, 0, 0.25);
+  }
+  50% {
+    box-shadow:
+      0 0 0 8px rgba(155, 255, 231, 0.08),
+      0 8px 32px rgba(59, 255, 210, 0.27);
+  }
+}
+@keyframes mission-hue-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 720px) {
+  .mission-topbar {
+    height: auto;
+    min-height: 76px;
+    gap: 8px;
+    padding: 12px 16px;
+  }
+  .mission-topbar .MuiStack-root {
+    gap: 6px;
+  }
+  .mission-topbar .MuiButton-root {
+    min-width: 0;
+    padding: 6px 9px;
+    font-size: 0.75rem;
+  }
+  .mission-hero {
+    min-height: 230px;
+    padding: 28px 22px;
+  }
+  .mission-grid {
+    padding: 14px;
+  }
+  .mission-detail {
+    margin: 0 14px 16px;
+    padding: 17px;
+  }
+  .mission-agent {
+    padding: 15px;
+  }
+  .mission-handoff {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mission-mark,
+  .mission-hero::before,
+  .mission-topbar .MuiIconButton-root,
+  .mission-topbar .MuiButton-root,
+  .mission-create-button,
+  .mission-panel,
+  .mission-detail {
+    animation: none !important;
+    transition: none !important;
+  }
+}

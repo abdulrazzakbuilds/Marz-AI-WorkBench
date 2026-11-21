@@ -65,6 +65,13 @@ pub async fn agent_choose_project(app: AppHandle) -> Option<String> {
 }
 
 #[tauri::command]
+pub async fn agent_capture_current_page(
+    app: AppHandle,
+) -> Result<crate::views::CapturedPage, String> {
+    crate::views::capture_current_page(&app).await
+}
+
+#[tauri::command]
 pub async fn agent_list_files(app: AppHandle) -> Result<Vec<String>, String> {
     let root = selected_project(&app)?;
     let root = fs::canonicalize(root).map_err(|e| e.to_string())?;

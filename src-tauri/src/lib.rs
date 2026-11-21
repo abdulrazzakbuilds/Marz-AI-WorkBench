@@ -443,6 +443,7 @@ pub fn run() {
             current_urls,
             set_mission_control_visible,
             agent::agent_choose_project,
+            agent::agent_capture_current_page,
             agent::agent_list_files,
             agent::agent_read_file,
             agent::agent_write_file,
