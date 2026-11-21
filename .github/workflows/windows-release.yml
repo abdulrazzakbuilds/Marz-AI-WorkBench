@@ -58,7 +58,11 @@ jobs:
           $process = Start-Process -FilePath $exe -PassThru -WindowStyle Hidden
           Start-Sleep -Seconds 8
           $process.Refresh()
-          if ($process.HasExited) { throw "The app exited during startup with code $($process.ExitCode)." }
+          if ($process.HasExited) {
+            $report = Join-Path $env:TEMP 'marz-ai-workbench-panic.log'
+            if (Test-Path -LiteralPath $report) { Get-Content -LiteralPath $report }
+            throw "The app exited during startup with code $($process.ExitCode)."
+          }
           Stop-Process -Id $process.Id -Force
           Write-Output 'The app stayed running for the startup smoke check.'
 

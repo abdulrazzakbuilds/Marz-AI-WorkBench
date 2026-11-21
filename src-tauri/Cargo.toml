@@ -1,6 +1,6 @@
 [package]
 name = "marz-ai-workbench"
-version = "0.1.0"
+version = "0.1.1"
 description = "A unified AI, coding, terminal, and study workspace"
 authors = ["Mohammed AbdulRazzak"]
 license = "MIT"
