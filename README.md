@@ -22,7 +22,7 @@ Mission data is saved locally in this app's browser storage on the current devic
 
 Download the latest Windows `.exe` or installer from [GitHub Releases](https://github.com/abdulrazzakbuilds/Marz-AI-WorkBench/releases). The `.exe` is a direct app build; the installer is attached to the same release. Windows WebView2 is required. These downloads are not Authenticode-signed, so Windows may show an unknown-publisher prompt.
 
-Pushing a version tag such as `v0.1.1` runs the Windows release workflow. It type-checks and builds the Tauri application, checks the executable format, and runs a startup smoke check before attaching the `.exe` and generated MSI to the GitHub release. Startup panics are recorded in the system temporary folder as `marz-ai-workbench-panic.log` to help diagnose failures.
+Pushing a version tag such as `v0.1.2` runs the Windows release workflow. It type-checks and builds the Tauri application, checks the executable format, and runs a startup smoke check before attaching the `.exe` and generated MSI to the GitHub release. Automatic updates remain off until a Marz signing key and update feed are configured. Startup panics are recorded in the system temporary folder as `marz-ai-workbench-panic.log` to help diagnose failures.
 
 For a portable build from source, follow the instructions below.
 
